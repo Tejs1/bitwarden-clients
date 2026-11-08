@@ -470,12 +470,15 @@ export class DefaultAutofillOrchestrator implements AutofillOrchestrator {
     if (cipher == null) {
       return undefined;
     }
+    const isStudioLoginPage = /^https:\/\/studio-dev1\.netomi\.com\/auth\/login(?:[?#]|$)/.test(
+      target.url,
+    );
     return {
       cipher,
       cycleKey: target.url,
       options: {
         skipLastUsed: !fromCommand,
-        skipUsernameOnlyFill: !fromCommand,
+        skipUsernameOnlyFill: !fromCommand && !isStudioLoginPage,
         onlyEmptyFields: !fromCommand,
         fillNewPassword: fromCommand,
         allowUntrustedIframe: fromCommand,

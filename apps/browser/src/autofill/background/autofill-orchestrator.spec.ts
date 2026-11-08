@@ -195,6 +195,40 @@ describe("DefaultAutofillOrchestrator", () => {
   afterEach(() => jest.clearAllMocks());
 
   describe("page-load fills", () => {
+    it.each([
+      ["https://studio-dev1.netomi.com/auth/login", false],
+      ["https://studio-dev1.netomi.com/auth/login?next=%2Fai-agent", false],
+      ["https://studio-dev1.netomi.com/auth/login#email", false],
+      ["http://studio-dev1.netomi.com/auth/login", true],
+      ["https://studio-dev1.netomi.com.evil.example/auth/login", true],
+      ["https://studio-dev1.netomi.com/auth/login-other", true],
+      ["https://studio-dev1.netomi.com/ai-agent/home/overview", true],
+      ["https://other.example/auth/login", true],
+    ])("limits username-only page-load fills at %s", async (url, skipUsernameOnlyFill) => {
+      const tab = createChromeTabMock({ id: 1, url });
+      const pd = createPageDetailMock({
+        frameId: 0,
+        tab,
+        details: createAutofillPageDetailsMock({ url }),
+      });
+      autofillService.collectPageDetailsFromTab$.mockReturnValue(of([pd]));
+      cipherService.getLastUsedForUrl.mockResolvedValue(makeCipher(CipherType.Login));
+      jest.spyOn(BrowserApi, "getTab").mockResolvedValue(tab);
+      jest.spyOn(BrowserApi, "getTabFromCurrentWindow").mockResolvedValue(tab);
+
+      emitPageTransition(pd);
+      await flushPromises();
+
+      expect(autofillService.doAutoFill).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skipUsernameOnlyFill,
+          onlyEmptyFields: true,
+          fillNewPassword: false,
+          allowUntrustedIframe: false,
+        }),
+      );
+    });
+
     it("properly sequences target resolution, validation, data collection, activity reporting, autofill operations, and UI updates", async () => {
       // A fill that places a credential and copies a TOTP exercises every stage, so their relative
       // order can be asserted end to end. What each stage is called *with* is covered separately.
