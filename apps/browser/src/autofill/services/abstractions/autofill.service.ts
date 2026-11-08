@@ -29,6 +29,7 @@ export interface AutoFillOptions {
   allowUntrustedIframe?: boolean;
   allowTotpAutofill?: boolean;
   autoSubmitLogin?: boolean;
+  autoSubmitNetomiStudio?: boolean;
   focusedFieldForm?: string;
   focusedFieldOpid?: string;
   inlineMenuFillType?: InlineMenuFillType;

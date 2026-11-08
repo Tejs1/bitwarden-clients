@@ -197,6 +197,9 @@ describe("DefaultAutofillOrchestrator", () => {
   describe("page-load fills", () => {
     it.each([
       ["https://studio-dev1.netomi.com/auth/login", false],
+      ["https://studio.netomi.com/auth/login", false],
+      ["https://studio-qa.netomi.com/auth/login", false],
+      ["https://support.netomi.com/auth/login", true],
       ["https://studio-dev1.netomi.com/auth/login?next=%2Fai-agent", false],
       ["https://studio-dev1.netomi.com/auth/login#email", false],
       ["http://studio-dev1.netomi.com/auth/login", true],
@@ -222,10 +225,18 @@ describe("DefaultAutofillOrchestrator", () => {
       expect(autofillService.doAutoFill).toHaveBeenCalledWith(
         expect.objectContaining({
           skipUsernameOnlyFill,
+          autoSubmitNetomiStudio: !skipUsernameOnlyFill,
           onlyEmptyFields: true,
           fillNewPassword: false,
           allowUntrustedIframe: false,
         }),
+      );
+
+      autofillService.doAutoFill.mockClear();
+      autofillOrchestrator.autofillActiveTabFromCommand(tab);
+      await flushPromises();
+      expect(autofillService.doAutoFill).toHaveBeenCalledWith(
+        expect.objectContaining({ autoSubmitNetomiStudio: false }),
       );
     });
 

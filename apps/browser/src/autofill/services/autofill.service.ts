@@ -557,6 +557,7 @@ export default class AutofillService implements AutofillServiceInterface {
             url: tab.url,
             pageDetailsUrl: pd.details.url,
             showAnimations,
+            ...(options.autoSubmitNetomiStudio ? { autoSubmitNetomiStudio: true } : {}),
           },
           { frameId: pd.frameId },
         );

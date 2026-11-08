@@ -1,5 +1,8 @@
 import { AutofillerCommand, AutofillMessageCommand } from "../enums/autofill-message.enums";
 import { setupExtensionDisconnectAction } from "../utils";
+import { isNetomiStudioLoginUrl } from "../utils/netomi-studio";
+
+import { NetomiStudioAutoLogin } from "./netomi-studio-auto-login";
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", loadAutofiller);
@@ -11,15 +14,27 @@ function loadAutofiller() {
   let pageHref: null | string = null;
   let filledThisHref = false;
   let hadStudioPasswordField = false;
+  let studioAutoLogin: NetomiStudioAutoLogin | undefined;
   let delayFillTimeout: number;
   let doFillInterval: number | NodeJS.Timeout;
   const handleExtensionDisconnect = () => {
     clearDoFillInterval();
     clearDelayFillTimeout();
+    studioAutoLogin?.dispose();
   };
   const handleExtensionMessage = (message: any) => {
     if (message.command === "fillForm" && pageHref === message.url) {
       filledThisHref = true;
+      if (
+        message.autoSubmitNetomiStudio === true &&
+        message.pageDetailsUrl === window.location.href &&
+        isNetomiStudioLoginUrl(window.location.href) &&
+        window.top === window &&
+        message.fillScript
+      ) {
+        studioAutoLogin ??= new NetomiStudioAutoLogin();
+        studioAutoLogin.onFill(message.fillScript);
+      }
       return;
     }
     if (message.command === AutofillerCommand.disable) {
@@ -36,9 +51,7 @@ function loadAutofiller() {
   }
 
   function doFillIfNeeded(force = false) {
-    const studioPasswordField = /^https:\/\/studio-dev1\.netomi\.com\/auth\/login(?:[?#]|$)/.test(
-      window.location.href,
-    )
+    const studioPasswordField = isNetomiStudioLoginUrl(window.location.href)
       ? document.querySelector<HTMLInputElement>(
           'input[type="password"]:not([disabled]):not([readonly])',
         )
@@ -70,6 +83,7 @@ function loadAutofiller() {
 
       void chrome.runtime.sendMessage(msg);
     }
+    studioAutoLogin?.advance();
   }
 
   function clearDoFillInterval() {

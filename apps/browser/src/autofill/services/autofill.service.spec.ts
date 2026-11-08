@@ -943,6 +943,17 @@ describe("AutofillService", () => {
       );
     });
 
+    it("passes the explicitly requested Studio submission marker to the filled frame", async () => {
+      await autofillService.doAutoFill({ ...autofillOptions, autoSubmitNetomiStudio: true });
+      const page = autofillOptions.pageDetails[0];
+      expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+        page.tab.id,
+        expect.objectContaining({ command: "fillForm", autoSubmitNetomiStudio: true }),
+        { frameId: page.frameId },
+        expect.any(Function),
+      );
+    });
+
     it("will autofill card data for a page", async () => {
       autofillOptions.cipher.type = CipherType.Card;
       autofillOptions.cipher.card = mock<CardView>({

@@ -43,6 +43,7 @@ import {
   FillResult,
   shouldAutoCopyTotp,
 } from "../types/fill-result";
+import { isNetomiStudioLoginUrl } from "../utils/netomi-studio";
 
 import { AutofillOrchestrator } from "./abstractions/autofill-orchestrator";
 
@@ -470,15 +471,14 @@ export class DefaultAutofillOrchestrator implements AutofillOrchestrator {
     if (cipher == null) {
       return undefined;
     }
-    const isStudioLoginPage = /^https:\/\/studio-dev1\.netomi\.com\/auth\/login(?:[?#]|$)/.test(
-      target.url,
-    );
+    const isStudioLoginPage = isNetomiStudioLoginUrl(target.url);
     return {
       cipher,
       cycleKey: target.url,
       options: {
         skipLastUsed: !fromCommand,
         skipUsernameOnlyFill: !fromCommand && !isStudioLoginPage,
+        autoSubmitNetomiStudio: !fromCommand && isStudioLoginPage,
         onlyEmptyFields: !fromCommand,
         fillNewPassword: fromCommand,
         allowUntrustedIframe: fromCommand,
