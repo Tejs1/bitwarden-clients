@@ -10,6 +10,7 @@ if (document.readyState === "loading") {
 function loadAutofiller() {
   let pageHref: null | string = null;
   let filledThisHref = false;
+  let hadStudioPasswordField = false;
   let delayFillTimeout: number;
   let doFillInterval: number | NodeJS.Timeout;
   const handleExtensionDisconnect = () => {
@@ -35,7 +36,18 @@ function loadAutofiller() {
   }
 
   function doFillIfNeeded(force = false) {
-    if (force || pageHref !== window.location.href) {
+    const studioPasswordField = /^https:\/\/studio-dev1\.netomi\.com\/auth\/login(?:[?#]|$)/.test(
+      window.location.href,
+    )
+      ? document.querySelector<HTMLInputElement>(
+          'input[type="password"]:not([disabled]):not([readonly])',
+        )
+      : null;
+    const hasStudioPasswordField = !!studioPasswordField?.getClientRects().length;
+    const studioPasswordAppeared = hasStudioPasswordField && !hadStudioPasswordField;
+    hadStudioPasswordField = hasStudioPasswordField;
+
+    if (force || pageHref !== window.location.href || studioPasswordAppeared) {
       if (!force) {
         // Some websites are slow and rendering all page content. Try to fill again later
         // if we haven't already.
