@@ -2,12 +2,15 @@
   "manifest_version": 3,
   "minimum_chrome_version": "134.0",
   "name": "__MSG_extName__",
+  "__chrome__name": "Private Vault (Tejs1 fork)",
   "short_name": "Bitwarden",
+  "__chrome__short_name": "Private Vault",
   "version": "2026.10.2",
   "description": "__MSG_extDesc__",
   "default_locale": "en",
   "author": "Bitwarden Inc.",
   "homepage_url": "https://bitwarden.com",
+  "__chrome__homepage_url": "https://github.com/Tejs1/bitwarden-clients",
   "icons": {
     "16": "images/icon16.png",
     "32": "images/icon32.png",
@@ -44,6 +47,7 @@
       "38": "images/icon38.png"
     },
     "default_title": "Bitwarden",
+    "__chrome__default_title": "Private Vault (Tejs1 fork)",
     "default_popup": "popup/index.html"
   },
   "permissions": [
