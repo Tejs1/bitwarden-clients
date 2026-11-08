@@ -114,6 +114,25 @@ describe("CollectAutofillContentService", () => {
         });
     });
 
+    it("collects a newly added password before the idle mutation drain", async () => {
+      document.body.innerHTML = '<form><input type="text" /></form>';
+      jest.spyOn(globalThis, "requestIdleCallback").mockReturnValue(1);
+      collectAutofillContentService.startMonitoring();
+      const initial = await collectAutofillContentService.getPageDetails();
+      expect(initial.fields.some((field) => field.type === "password")).toBe(false);
+
+      const password = document.createElement("input");
+      password.type = "password";
+      document.querySelector("form")?.append(password);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      collectAutofillContentService.prepareForExplicitCollection();
+      const updated = await collectAutofillContentService.getPageDetails();
+
+      expect(updated.fields.some((field) => field.type === "password")).toBe(true);
+      collectAutofillContentService.stopMonitoring();
+    });
+
     it("returns an object with empty forms and fields if no fields were found on a previous iteration", async () => {
       collectAutofillContentService["domRecentlyMutated"] = false;
       collectAutofillContentService["noFieldsFound"] = true;

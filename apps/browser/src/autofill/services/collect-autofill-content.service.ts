@@ -1558,6 +1558,7 @@ export class CollectAutofillContentService implements CollectAutofillContentServ
         // Gate the noFieldsFound-invalidating flag; skip the walk once it's set.
         if (!this.pendingChildListUpdate && this.mutationAddsOrRemovesFormField(mutation)) {
           this.pendingChildListUpdate = true;
+          this.requirePageDetailsUpdate();
         }
         for (const node of mutation.addedNodes ?? []) {
           if (!nodeIsElement(node)) {
